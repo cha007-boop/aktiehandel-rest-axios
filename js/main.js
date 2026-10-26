@@ -79,7 +79,8 @@ const app = Vue.createApp({
 
             axios
                 .post(baseURL, this.newAktie)
-                .then(() => {
+                .then((response) => {
+                    this.aktieList.push(response.data)
                     this.postMessage = 'Stock added successfully.'
                     this.newAktie = {
                         name: '',
