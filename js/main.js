@@ -13,6 +13,15 @@ const app = Vue.createApp({
             maxExchangePrice: null,
             sortBy: null,
             sortAscending: true,
+            activeView: 'filter',
+            newAktie: {
+                name: '',
+                amount: null,
+                exchangePrice: null,
+            },
+            isSubmitting: false,
+            postMessage: '',
+            postError: '',
         }
     },
     mounted() {
@@ -62,6 +71,30 @@ const app = Vue.createApp({
                 this.sortAscending = true
             }
             this.getAll()
+        },
+        postAktie() {
+            this.isSubmitting = true
+            this.postMessage = ''
+            this.postError = ''
+
+            axios
+                .post(baseURL, this.newAktie)
+                .then(() => {
+                    this.postMessage = 'Stock added successfully.'
+                    this.newAktie = {
+                        name: '',
+                        amount: null,
+                        exchangePrice: null,
+                    }
+                })
+                .catch((error) => {
+                    this.postError = error.response?.data?.title
+                        || error.response?.data?.message
+                        || error.message
+                })
+                .finally(() => {
+                    this.isSubmitting = false
+                })
         },
     },
     computed: {

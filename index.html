@@ -23,65 +23,110 @@
                     <div class="card shadow-sm">
                         <div class="card-body">
                             <h1 class="card-title mb-3">{{ intro }}</h1>
-                            <p class="text-muted">Filtering</p>
-                            <!-- Add filter options -->
-                            <div class="row mb-3">
-                                <div class="col-md-6 mb-3">
-                                    <label for="aktieName" class="form-label">Stock Name</label>
-                                    <input type="text" id="aktieName" v-model="aktieName" @change="getAll"
-                                        class="form-control" placeholder="Enter stock name">
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="id" class="form-label">ID</label>
-                                    <input type="number" id="id" v-model.number="id" @change="getAll"
-                                        class="form-control" placeholder="Enter ID">
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="minExchangePrice" class="form-label">Min Exchange Price</label>
-                                    <input type="number" id="minExchangePrice" v-model.number="minExchangePrice"
-                                        @change="getAll" class="form-control"
-                                        placeholder="Enter minimum exchange price">
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="maxExchangePrice" class="form-label">Max Exchange Price</label>
-                                    <input type="number" id="maxExchangePrice" v-model.number="maxExchangePrice"
-                                        @change="getAll" class="form-control"
-                                        placeholder="Enter maximum exchange price">
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="minAmount" class="form-label">Min Amount</label>
-                                    <input type="number" id="minAmount" v-model.number="minAmount" @change="getAll"
-                                        class="form-control" placeholder="Enter minimum amount">
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="maxAmount" class="form-label">Max Amount</label>
-                                    <input type="number" id="maxAmount" v-model.number="maxAmount" @change="getAll"
-                                        class="form-control" placeholder="Enter maximum amount">
-                                </div>
+                            <div class="btn-group mb-4" role="group" aria-label="Stock actions">
+                                <button type="button" class="btn"
+                                    :class="activeView === 'filter' ? 'btn-primary' : 'btn-outline-primary'"
+                                    :aria-pressed="activeView === 'filter'" @click="activeView = 'filter'">
+                                    Filter stocks
+                                </button>
+                                <button type="button" class="btn"
+                                    :class="activeView === 'create' ? 'btn-primary' : 'btn-outline-primary'"
+                                    :aria-pressed="activeView === 'create'" @click="activeView = 'create'">
+                                    Add stock
+                                </button>
                             </div>
 
-                            <!-- Table of aktiehandel -->
-                            <div class="table-responsive">
-                                <table class="table table-striped table-hover mb-0">
-                                    <thead class="thead-dark">
-                                        <tr>
-                                            <!-- Make table headers clickable to sort -->
-                                            <th @click="sortByColumn('id')">ID</th>
-                                            <th @click="sortByColumn('name')">Name</th>
-                                            <th @click="sortByColumn('amount')">Amount</th>
-                                            <th @click="sortByColumn('exchangePrice')">Exchange Price</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr v-for="aktieHandel in aktieList" :key="aktieHandel.id">
-                                            <th>{{ aktieHandel.id }}</th>
-                                            <td>{{ aktieHandel.name }}</td>
-                                            <td>{{ aktieHandel.amount }}</td>
-                                            <td>{{ aktieHandel.exchangePrice }}</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
+                            <section v-if="activeView === 'filter'">
+                                <p class="text-muted">Filtering</p>
+                                <div class="row mb-3">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="aktieName" class="form-label">Stock Name</label>
+                                        <input type="text" id="aktieName" v-model="aktieName" @change="getAll"
+                                            class="form-control" placeholder="Enter stock name">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="id" class="form-label">ID</label>
+                                        <input type="number" id="id" v-model.number="id" @change="getAll"
+                                            class="form-control" placeholder="Enter ID">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="minExchangePrice" class="form-label">Min Exchange Price</label>
+                                        <input type="number" id="minExchangePrice" v-model.number="minExchangePrice"
+                                            @change="getAll" class="form-control"
+                                            placeholder="Enter minimum exchange price">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="maxExchangePrice" class="form-label">Max Exchange Price</label>
+                                        <input type="number" id="maxExchangePrice" v-model.number="maxExchangePrice"
+                                            @change="getAll" class="form-control"
+                                            placeholder="Enter maximum exchange price">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="minAmount" class="form-label">Min Amount</label>
+                                        <input type="number" id="minAmount" v-model.number="minAmount"
+                                            @change="getAll" class="form-control"
+                                            placeholder="Enter minimum amount">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="maxAmount" class="form-label">Max Amount</label>
+                                        <input type="number" id="maxAmount" v-model.number="maxAmount"
+                                            @change="getAll" class="form-control"
+                                            placeholder="Enter maximum amount">
+                                    </div>
+                                </div>
+
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-hover mb-0">
+                                        <thead class="thead-dark">
+                                            <tr>
+                                                <th @click="sortByColumn('id')">ID</th>
+                                                <th @click="sortByColumn('name')">Name</th>
+                                                <th @click="sortByColumn('amount')">Amount</th>
+                                                <th @click="sortByColumn('exchangePrice')">Exchange Price</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="aktieHandel in aktieList" :key="aktieHandel.id">
+                                                <th>{{ aktieHandel.id }}</th>
+                                                <td>{{ aktieHandel.name }}</td>
+                                                <td>{{ aktieHandel.amount }}</td>
+                                                <td>{{ aktieHandel.exchangePrice }}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </section>
+
+                            <section v-else>
+                                <h2 class="h4 mb-3">Add a stock</h2>
+                                <form @submit.prevent="postAktie">
+                                    <div class="mb-3">
+                                        <label for="newAktieName" class="form-label">Stock Name</label>
+                                        <input type="text" id="newAktieName" v-model.trim="newAktie.name"
+                                            class="form-control" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="newAktieAmount" class="form-label">Amount</label>
+                                        <input type="number" id="newAktieAmount" v-model.number="newAktie.amount"
+                                            class="form-control" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="newAktieExchangePrice" class="form-label">Exchange Price</label>
+                                        <input type="number" id="newAktieExchangePrice"
+                                            v-model.number="newAktie.exchangePrice" class="form-control" step="any"
+                                            required>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary" :disabled="isSubmitting">
+                                        {{ isSubmitting ? 'Adding...' : 'Add stock' }}
+                                    </button>
+                                    <p v-if="postMessage" class="alert alert-success mt-3" role="status">
+                                        {{ postMessage }}
+                                    </p>
+                                    <p v-if="postError" class="alert alert-danger mt-3" role="alert">
+                                        {{ postError }}
+                                    </p>
+                                </form>
+                            </section>
                         </div>
                     </div>
                 </section>
