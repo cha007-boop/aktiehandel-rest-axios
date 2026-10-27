@@ -81,18 +81,73 @@
                                                 <th @click="sortByColumn('name')">Name</th>
                                                 <th @click="sortByColumn('amount')">Amount</th>
                                                 <th @click="sortByColumn('exchangePrice')">Exchange Price</th>
+                                                <th scope="col">Actions</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             <tr v-for="aktieHandel in aktieList" :key="aktieHandel.id">
                                                 <th>{{ aktieHandel.id }}</th>
-                                                <td>{{ aktieHandel.name }}</td>
-                                                <td>{{ aktieHandel.amount }}</td>
-                                                <td>{{ aktieHandel.exchangePrice }}</td>
+                                                <template v-if="editingId === aktieHandel.id">
+                                                    <td>
+                                                        <input v-model.trim="editAktie.name" class="form-control"
+                                                            :aria-label="'Name for stock ' + aktieHandel.id" required>
+                                                    </td>
+                                                    <td>
+                                                        <input v-model.number="editAktie.amount" type="number"
+                                                            class="form-control"
+                                                            :aria-label="'Amount for stock ' + aktieHandel.id" required>
+                                                    </td>
+                                                    <td>
+                                                        <input v-model.number="editAktie.exchangePrice" type="number"
+                                                            step="any" class="form-control"
+                                                            :aria-label="'Exchange price for stock ' + aktieHandel.id"
+                                                            required>
+                                                    </td>
+                                                    <td class="text-nowrap">
+                                                        <button type="button" class="btn btn-sm btn-primary me-1"
+                                                            @click="putAktie" :disabled="isUpdating">
+                                                            {{ isUpdating ? 'Saving...' : 'Save' }}
+                                                        </button>
+                                                        <button type="button" class="btn btn-sm btn-outline-secondary"
+                                                            @click="cancelEdit" :disabled="isUpdating">
+                                                            Cancel
+                                                        </button>
+                                                    </td>
+                                                </template>
+                                                <template v-else>
+                                                    <td>{{ aktieHandel.name }}</td>
+                                                    <td>{{ aktieHandel.amount }}</td>
+                                                    <td>{{ aktieHandel.exchangePrice }}</td>
+                                                    <td class="text-nowrap">
+                                                        <button type="button"
+                                                            class="btn btn-sm btn-outline-primary me-1"
+                                                            @click="startEdit(aktieHandel)"
+                                                            :disabled="editingId !== null || deletingId !== null">
+                                                            Edit
+                                                        </button>
+                                                        <button type="button" class="btn btn-sm btn-outline-danger"
+                                                            @click="openDeleteModal(aktieHandel)"
+                                                            :disabled="deletingId !== null || editingId !== null">
+                                                            Delete
+                                                        </button>
+                                                    </td>
+                                                </template>
+                                            </tr>
+                                            <tr v-if="aktieList.length === 0">
+                                                <td colspan="5" class="text-center text-muted">No stocks found.</td>
                                             </tr>
                                         </tbody>
                                     </table>
                                 </div>
+                                <p v-if="errorMessage" class="alert alert-danger mt-3" role="alert">
+                                    {{ errorMessage }}
+                                </p>
+                                <p v-if="updateMessage" class="alert alert-success mt-3" role="status">
+                                    {{ updateMessage }}
+                                </p>
+                                <p v-if="updateError" class="alert alert-danger mt-3" role="alert">
+                                    {{ updateError }}
+                                </p>
                             </section>
 
                             <section v-else>
@@ -131,9 +186,39 @@
             </div>
         </div>
 
-
-
+        <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-danger text-white">
+                        <h2 class="modal-title fs-5" id="deleteModalLabel">Confirm deletion</h2>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                            aria-label="Close" @click="deleteTarget = null"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="mb-0">
+                            Are you sure you want to delete <strong>{{ deleteTarget?.name }}</strong>?
+                            This action cannot be undone.
+                        </p>
+                        <p v-if="deleteError" class="alert alert-danger mt-3 mb-0" role="alert">
+                            {{ deleteError }}
+                        </p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                            @click="deleteTarget = null" :disabled="deletingId !== null">
+                            Cancel
+                        </button>
+                        <button type="button" class="btn btn-danger" @click="deleteAktie"
+                            :disabled="!deleteTarget || deletingId !== null">
+                            {{ deletingId !== null ? 'Deleting...' : 'Delete stock' }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 
     <!-- Import App -->
     <script src="./js/main.js"></script>
