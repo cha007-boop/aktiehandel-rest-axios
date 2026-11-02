@@ -23,6 +23,7 @@
                     <div class="card shadow-sm">
                         <div class="card-body">
                             <h1 class="card-title mb-3">{{ intro }}</h1>
+                            <!-- Buttons at to control the active view -->
                             <div class="btn-group mb-4" role="group" aria-label="Stock actions">
                                 <button type="button" class="btn"
                                     :class="activeView === 'filter' ? 'btn-primary' : 'btn-outline-primary'"
@@ -38,6 +39,7 @@
 
                             <section v-if="activeView === 'filter'">
                                 <p class="text-muted">Filtering</p>
+                                <!-- Various input fields for filtering -->
                                 <div class="row mb-3">
                                     <div class="col-md-6 mb-3">
                                         <label for="aktieName" class="form-label">Stock Name</label>
@@ -73,20 +75,63 @@
                                     </div>
                                 </div>
 
+                                <!-- Table to display stocks from REST service -->
                                 <div class="table-responsive">
                                     <table class="table table-striped table-hover mb-0">
                                         <thead class="table-dark">
                                             <tr>
-                                                <th @click="sortByColumn('id')">ID</th>
-                                                <th @click="sortByColumn('name')">Name</th>
-                                                <th @click="sortByColumn('amount')">Amount</th>
-                                                <th @click="sortByColumn('exchangePrice')">Exchange Price</th>
+                                                <!-- aria-sort is for screenreaders, not strictly necessary -->
+                                                <th scope="col"
+                                                    :aria-sort="sortBy === 'id' ? (sortAscending ? 'ascending' : 'descending') : 'none'">
+                                                    <button type="button"
+                                                        class="btn btn-link p-0 text-reset text-decoration-none"
+                                                        @click="sortByColumn('id')">
+                                                        ID
+                                                        <span v-if="sortBy === 'id'" aria-hidden="true">
+                                                            {{ sortAscending ? '▲' : '▼' }}
+                                                        </span>
+                                                    </button>
+                                                </th>
+                                                <th scope="col"
+                                                    :aria-sort="sortBy === 'name' ? (sortAscending ? 'ascending' : 'descending') : 'none'">
+                                                    <button type="button"
+                                                        class="btn btn-link p-0 text-reset text-decoration-none"
+                                                        @click="sortByColumn('name')">
+                                                        Name
+                                                        <span v-if="sortBy === 'name'" aria-hidden="true">
+                                                            {{ sortAscending ? '▲' : '▼' }}
+                                                        </span>
+                                                    </button>
+                                                </th>
+                                                <th scope="col"
+                                                    :aria-sort="sortBy === 'amount' ? (sortAscending ? 'ascending' : 'descending') : 'none'">
+                                                    <button type="button"
+                                                        class="btn btn-link p-0 text-reset text-decoration-none"
+                                                        @click="sortByColumn('amount')">
+                                                        Amount
+                                                        <span v-if="sortBy === 'amount'" aria-hidden="true">
+                                                            {{ sortAscending ? '▲' : '▼' }}
+                                                        </span>
+                                                    </button>
+                                                </th>
+                                                <th scope="col"
+                                                    :aria-sort="sortBy === 'exchangePrice' ? (sortAscending ? 'ascending' : 'descending') : 'none'">
+                                                    <button type="button"
+                                                        class="btn btn-link p-0 text-reset text-decoration-none"
+                                                        @click="sortByColumn('exchangePrice')">
+                                                        Exchange Price
+                                                        <span v-if="sortBy === 'exchangePrice'" aria-hidden="true">
+                                                            {{ sortAscending ? '▲' : '▼' }}
+                                                        </span>
+                                                    </button>
+                                                </th>
                                                 <th scope="col">Actions</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             <tr v-for="aktieHandel in aktieList" :key="aktieHandel.id">
                                                 <th>{{ aktieHandel.id }}</th>
+                                                <!-- Make table cells work as input fields when updating -->
                                                 <template v-if="editingId === aktieHandel.id">
                                                     <td>
                                                         <input v-model.trim="editAktie.name" class="form-control"

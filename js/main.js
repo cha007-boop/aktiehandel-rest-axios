@@ -59,7 +59,7 @@ const app = Vue.createApp({
 
             if (this.sortBy) {
                 params.sortBy = this.sortBy
-                params.sortAscending = this.sortAscending ? 'asc' : 'desc'
+                params.sortOrder = this.sortAscending ? 'asc' : 'desc'
             }
             // Axios serializes params as URL query parameters.
             axios
@@ -104,10 +104,7 @@ const app = Vue.createApp({
                     }
                 })
                 .catch((error) => {
-                    this.postError = error.response?.data?.title
-                        || error.response?.data?.message
-                        || error.response?.data
-                        || error.message
+                    this.postError = this.getRequestErrorMessage(error)
                 })
                 .finally(() => {
                     this.isSubmitting = false
