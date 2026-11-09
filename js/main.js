@@ -1,4 +1,8 @@
+const authURL = 'http://localhost:5138/api/Auth/login'
+
 const baseURL = 'http://localhost:5138/api/aktiehandels/'
+
+const tokenName = 'userInfo'
 
 const app = Vue.createApp({
     // Initialize the app's data and UI state.
@@ -32,13 +36,71 @@ const app = Vue.createApp({
             postMessage: '',
             postError: '',
             errorMessage: '',
+
+            auth: { username: '', password: '' },
+            userInfo: null,
+            authMessage: '',
+            isLoggingIn: false
         }
     },
     // Load stocks when the app starts.
     mounted() {
         this.getAll()
     },
+    created() {
+        const userInfoStr = localStorage.getItem(tokenName);
+        if (userInfoStr != null) {
+            this.userInfo = JSON.parse(userInfoStr);
+            //this.getAll(); // Fetch aktiehandels immediately if user is already logged in
+        }
+    },
     methods: {
+        parseJwt(token) {
+            const payload = token.split('.')[1];
+
+            // Convert Base64URL to regular Base64
+            const base64 = payload
+                .replace(/-/g, '+')
+                .replace(/_/g, '/');
+
+            // Decode and convert to JSON
+            const decodedPayload = atob(base64);
+
+            return JSON.parse(decodedPayload);
+        },
+        login() {
+            this.isLoggingIn = true
+            this.authMessage = ''
+
+            axios
+                .post(authURL, this.auth)
+                .then(response => {
+                    if (!response.data?.token) {
+                        throw new Error('The login response did not include an authentication token.')
+                    }
+
+                    this.userInfo = {
+                        username: this.auth.username,
+                        role: this.parseJwt(response.data.token)["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"],
+                        token: response.data.token
+                    }
+                    localStorage.setItem(tokenName, JSON.stringify(this.userInfo))
+                    this.auth.password = ''
+                    bootstrap.Dropdown.getOrCreateInstance(document.getElementById('loginDropdown')).hide()
+                })
+                .catch((error) => {
+                    this.authMessage = this.getRequestErrorMessage(error)
+                })
+                .finally(() => {
+                    this.isLoggingIn = false
+                })
+
+        },
+        logout() {
+            localStorage.removeItem(tokenName)
+            this.userInfo = null
+            this.auth = { username: '', password: '' }
+        },
         // Fetch stocks using the current filters and sort order.
         getAll() {
             const params = {}
@@ -90,7 +152,6 @@ const app = Vue.createApp({
             this.postMessage = ''
             this.postError = ''
 
-
             axios
                 .post(baseURL, this.newAktie)
                 .then((response) => {
@@ -101,7 +162,7 @@ const app = Vue.createApp({
                         name: '',
                         amount: null,
                         exchangePrice: null,
-                    }
+                    } // Resets the form
                 })
                 .catch((error) => {
                     this.postError = this.getRequestErrorMessage(error)
