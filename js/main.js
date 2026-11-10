@@ -100,6 +100,9 @@ const app = Vue.createApp({
             localStorage.removeItem(tokenName)
             this.userInfo = null
             this.auth = { username: '', password: '' }
+            this.activeView = 'filter'
+            this.editingId = null
+            this.editAktie = null
         },
         // Fetch stocks using the current filters and sort order.
         getAll() {
