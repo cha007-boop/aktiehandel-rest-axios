@@ -51,7 +51,7 @@ const app = Vue.createApp({
         const userInfoStr = localStorage.getItem(tokenName);
         if (userInfoStr != null) {
             this.userInfo = JSON.parse(userInfoStr);
-            //this.getAll(); // Fetch aktiehandels immediately if user is already logged in
+            this.getAll(); // Fetch aktiehandels immediately if user is already logged in
         }
     },
     methods: {
@@ -87,6 +87,7 @@ const app = Vue.createApp({
                     localStorage.setItem(tokenName, JSON.stringify(this.userInfo))
                     this.auth.password = ''
                     bootstrap.Dropdown.getOrCreateInstance(document.getElementById('loginDropdown')).hide()
+                    this.getAll()
                 })
                 .catch((error) => {
                     this.authMessage = this.getRequestErrorMessage(error)
@@ -128,7 +129,9 @@ const app = Vue.createApp({
             }
             // Axios serializes params as URL query parameters.
             axios
-                .get(baseURL, { params })
+                .get(baseURL, {
+                    params//, headers: {'Authorization': 'Bearer ' + this.userInfo.token }
+                })
                 .then((response) => {
                     this.aktieList = response.data
                     this.errorMessage = ''
@@ -156,7 +159,11 @@ const app = Vue.createApp({
             this.postError = ''
 
             axios
-                .post(baseURL, this.newAktie)
+                .post(baseURL, this.newAktie, {
+                    headers: {
+                        'Authorization': 'Bearer ' + this.userInfo.token
+                    }
+                })
                 .then((response) => {
                     console.log('Post metode kaldt')
                     this.aktieList.push(response.data)
@@ -214,7 +221,11 @@ const app = Vue.createApp({
             const updatedAktie = { id, ...this.editAktie }
 
             axios
-                .put(baseURL + id, updatedAktie)
+                .put(baseURL + id, updatedAktie, {
+                    headers: {
+                        'Authorization': 'Bearer ' + this.userInfo.token
+                    }
+                })
                 .then((response) => {
                     // Update the local list with the new values, using the response data if available.
                     const index = this.aktieList.findIndex((aktie) => aktie.id === id)
@@ -263,7 +274,11 @@ const app = Vue.createApp({
             this.deleteError = ''
 
             axios
-                .delete(baseURL + aktie.id)
+                .delete(baseURL + aktie.id, {
+                    headers: {
+                        'Authorization': 'Bearer ' + this.userInfo.token
+                    }
+                })
                 .then(() => {
                     this.aktieList = this.aktieList.filter((item) => item.id !== aktie.id)
                     bootstrap.Modal.getOrCreateInstance(document.getElementById('deleteModal')).hide()
